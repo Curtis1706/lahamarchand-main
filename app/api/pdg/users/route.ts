@@ -1,49 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
+import { requireRole } from "@/lib/auth-clerk"
+import { prisma } from "@/lib/prisma"
+import { Role } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
     console.log("👑 PDG Users API - GET request")
     
-    // Vérifier l'authentification avec NextAuth
-    const token = await getToken({ 
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET || "fallback-secret-key-for-development"
-    })
+    // Vérifier l'authentification avec Clerk
+    const user = await requireRole([Role.PDG])
     
-    console.log("👑 Token:", token)
-    
-    if (!token?.sub) {
-      console.log("❌ No token or token.sub found")
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-    
-    // Récupérer l'utilisateur depuis la base de données
-    const currentUser = await prisma.user.findUnique({
-      where: { id: token.sub },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      }
-    })
-    
-    console.log("👑 Current user:", currentUser?.name, currentUser?.role)
-    
-    if (!currentUser) {
-      console.log("❌ User not found in database")
-      return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 })
-    }
-    
-    if (currentUser.role !== "PDG") {
-      console.log("❌ User is not PDG:", currentUser.role)
-      return NextResponse.json({ error: "Accès refusé - Rôle PDG requis" }, { status: 403 })
-    }
+    console.log("👑 User:", user.email)
 
     // Récupérer tous les utilisateurs avec leurs relations complètes
     const users = await prisma.user.findMany({
@@ -338,3 +305,5 @@ async function changeUserRole(userId: string, newRole: string, reason: string) {
     )
   }
 }
+
+

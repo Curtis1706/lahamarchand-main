@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getCurrentUser } from "@/lib/get-current-user"
+import { getCurrentUser } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@prisma/client"
 
@@ -262,3 +262,4 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
+

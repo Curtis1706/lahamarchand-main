@@ -1,26 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { requireRole } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
     console.log("🏢 Getting partner catalog...")
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un partenaire
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user || user.role !== Role.PARTENAIRE) {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-    }
+    const user = await requireRole([Role.PARTENAIRE])
 
     const { searchParams } = new URL(request.url)
     const discipline = searchParams.get('discipline')
@@ -137,3 +123,4 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+

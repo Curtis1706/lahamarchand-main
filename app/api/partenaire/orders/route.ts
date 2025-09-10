@@ -1,26 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { requireRole } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
 import { Role, OrderStatus } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
     console.log("🏢 Getting partner orders...")
-    const session = await getServerSession(authOptions)
+    const user = await requireRole([Role.PARTENAIRE])
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un partenaire
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user || user.role !== Role.PARTENAIRE) {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-    }
+    const userId = user.id
 
     // Récupérer les informations du partenaire
     const partner = await prisma.partner.findUnique({
@@ -101,20 +89,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log("🏢 Creating partner order...")
-    const session = await getServerSession(authOptions)
+    const user = await requireRole([Role.PARTENAIRE])
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un partenaire
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user || user.role !== Role.PARTENAIRE) {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-    }
+    const userId = user.id
 
     // Récupérer les informations du partenaire
     const partner = await prisma.partner.findUnique({
@@ -211,3 +188,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

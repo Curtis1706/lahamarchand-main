@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getCurrentUser } from "@/lib/get-current-user"
+import { getCurrentUser } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
 import { Role, WorkStatus, OrderStatus } from "@prisma/client"
 
@@ -162,3 +162,4 @@ export async function PUT(request: NextRequest) {
     error: "Forbidden - Concepteurs cannot modify works directly. Contact PDG for changes."
   }, { status: 403 })
 }
+

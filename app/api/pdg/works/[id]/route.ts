@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { requireRole } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
+import { Role } from "@prisma/client"
 
 export async function PUT(
   request: NextRequest,
@@ -9,20 +9,9 @@ export async function PUT(
 ) {
   try {
     console.log("🔍 Updating work...")
-    const session = await getServerSession(authOptions)
+    const user = await requireRole([Role.PDG])
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un PDG
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user || user.role !== "PDG") {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-    }
+    const userId = user.id
 
     const workId = params.id
     const body = await request.json()

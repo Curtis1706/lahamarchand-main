@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getCurrentUser } from "@/lib/get-current-user"
+import { getCurrentUser } from "@/lib/auth-clerk"
 
 export async function GET(request: NextRequest) {
   console.log("🔍 Session check API called")
@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     timestamp: new Date().toISOString()
   })
 }
+
 
 
 

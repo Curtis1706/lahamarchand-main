@@ -1,25 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { requireRole } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
+import { Role } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
     console.log("🔍 Getting current user...")
-    const session = await getServerSession(authOptions)
+    const user = await requireRole([Role.PDG])
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un PDG
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user || user.role !== "PDG") {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-    }
+    const userId = user.id
 
     const { searchParams } = new URL(request.url)
     const workId = searchParams.get('workId')
@@ -96,20 +85,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log("🔍 Creating stock movement...")
-    const session = await getServerSession(authOptions)
+    const user = await requireRole([Role.PDG])
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un PDG
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user || user.role !== "PDG") {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-    }
+    const userId = user.id
 
     const body = await request.json()
     const { workId, type, quantity, reason, reference } = body
@@ -203,3 +181,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

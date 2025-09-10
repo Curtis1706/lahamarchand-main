@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getCurrentUser } from "@/lib/get-current-user"
+import { getCurrentUser } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
 import { Role, OrderStatus, WorkStatus } from "@prisma/client"
 
@@ -271,3 +271,4 @@ async function generateRoyaltiesReport(startDate?: string, endDate?: string) {
     message: "Rapport de droits d'auteur en cours de développement"
   }
 }
+

@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { requireRole } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
 import { Role, OrderStatus } from "@prisma/client"
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions)
-
-  if (!session || !session.user || session.user.role !== Role.PARTENAIRE) {
-    return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
-  }
-
-  const userId = session.user.id
-
   try {
+    const user = await requireRole([Role.PARTENAIRE])
+    const userId = user.id
     console.log("🏢 Getting partner dashboard data...")
 
     // Récupérer les informations du partenaire
@@ -181,3 +174,4 @@ export async function GET(req: Request) {
     )
   }
 }
+

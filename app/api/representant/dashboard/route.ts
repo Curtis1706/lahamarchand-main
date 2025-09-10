@@ -1,60 +1,55 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { requireRole } from "@/lib/auth-clerk"
 import { prisma } from "@/lib/prisma"
+import { Role } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
     console.log("🔍 Getting current user...")
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
+    const user = await requireRole([Role.REPRESENTANT])
+    const userId = userId
 
-    console.log("🔍 User ID:", session.user.id)
-    
     // Vérifier que l'utilisateur est un représentant
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const userDetails = await prisma.user.findUnique({
+      where: { id: userId },
       include: { partner: true }
     })
 
-    if (!user || user.role !== "REPRESENTANT") {
+    if (!userDetails || userDetails.role !== "REPRESENTANT") {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
     }
 
-    console.log("✅ User found:", user.name, user.role)
+    console.log("✅ User found:", userDetails.name, userDetails.role)
 
     // Statistiques générales
     const totalOrders = await prisma.order.count({
-      where: { userId: user.id }
+      where: { userId: userId }
     })
 
     const pendingOrders = await prisma.order.count({
       where: { 
-        userId: user.id,
+        userId: userId,
         status: "PENDING"
       }
     })
 
     const validatedOrders = await prisma.order.count({
       where: { 
-        userId: user.id,
+        userId: userId,
         status: "VALIDATED"
       }
     })
 
     const deliveredOrders = await prisma.order.count({
       where: { 
-        userId: user.id,
+        userId: userId,
         status: "DELIVERED"
       }
     })
 
     // Calculer le montant total des commandes
     const ordersWithItems = await prisma.order.findMany({
-      where: { userId: user.id },
+      where: { userId: userId },
       include: {
         items: {
           include: {
@@ -73,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     // Commandes récentes
     const recentOrders = await prisma.order.findMany({
-      where: { userId: user.id },
+      where: { userId: userId },
       include: {
         items: {
           include: {
@@ -96,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     const monthlyStats = await prisma.order.findMany({
       where: {
-        userId: user.id,
+        userId: userId,
         createdAt: { gte: sixMonthsAgo }
       },
       include: {
@@ -128,7 +123,7 @@ export async function GET(request: NextRequest) {
       by: ["workId"],
       where: {
         order: {
-          userId: user.id,
+          userId: userId,
           status: "VALIDATED"
         }
       },
@@ -215,3 +210,4 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+

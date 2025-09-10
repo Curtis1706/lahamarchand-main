@@ -6,10 +6,11 @@ export async function GET(request: NextRequest) {
   
   return NextResponse.json({
     cookies: cookies,
-    hasNextAuthCookie: cookies.some(c => c.name.includes('next-auth')),
+    hasClerkCookie: cookies.some(c => c.name.includes('clerk')),
     allCookieNames: cookies.map(c => c.name)
   })
 }
+
 
 
 

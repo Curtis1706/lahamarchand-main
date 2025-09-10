@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { requireRole } from "@/lib/auth-clerk"
+import { Role } from "@prisma/client"
+
 import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
     console.log("🔍 Getting current user...")
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un représentant
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
+    const user = await requireRole([Role.REPRESENTANT])
+    const userId = user.id
 
     if (!user || user.role !== "REPRESENTANT") {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
@@ -143,16 +136,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log("🔍 Creating new client...")
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
-    }
-
-    // Vérifier que l'utilisateur est un représentant
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
+    const user = await requireRole([Role.REPRESENTANT])
+    const userId = user.id
 
     if (!user || user.role !== "REPRESENTANT") {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
@@ -196,3 +181,6 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+
+

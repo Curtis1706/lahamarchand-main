@@ -1,11 +1,11 @@
 "use client"
 
-import { useUser, useAuth } from "@clerk/nextjs"
+import { useUser, useAuth as useClerkAuth } from "@clerk/nextjs"
 import { Role } from "@prisma/client"
 
-export function useAuthData() {
+export function useAuth() {
   const { user, isLoaded } = useUser()
-  const { isSignedIn } = useAuth()
+  const { isSignedIn } = useClerkAuth()
 
   return {
     user: user ? {
@@ -20,7 +20,7 @@ export function useAuthData() {
 }
 
 export function useRole() {
-  const { user } = useAuthData()
+  const { user } = useAuth()
   
   return {
     role: user?.role,
