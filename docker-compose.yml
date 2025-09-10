@@ -1,0 +1,21 @@
+# Configuration PostgreSQL avec Docker
+# Créez un fichier docker-compose.yml à la racine du projet
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: lahamarchand-postgres
+    environment:
+      POSTGRES_DB: lahamarchand_db
+      POSTGRES_USER: lahamarchand_user
+      POSTGRES_PASSWORD: lahamarchand_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
