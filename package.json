@@ -14,7 +14,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "deploy": "vercel --prod",
-    "deploy:setup": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1"
+    "deploy:setup": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.10",
