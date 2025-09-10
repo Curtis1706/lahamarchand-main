@@ -5,7 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
-import { SessionProviderWrapper } from "@/components/session-provider"
+import { ClerkProvider } from "@clerk/nextjs"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -19,15 +19,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                   <SessionProviderWrapper>
+    <ClerkProvider>
+      <html lang="fr" suppressHydrationWarning>
+        <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-          </SessionProviderWrapper>
-        </ThemeProvider>
-        <Analytics />
-      </body>
-    </html>
+          </ThemeProvider>
+          <Analytics />
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

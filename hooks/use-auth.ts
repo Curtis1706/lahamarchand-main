@@ -1,20 +1,26 @@
 "use client"
 
-import { useSession } from "next-auth/react"
+import { useUser, useAuth } from "@clerk/nextjs"
 import { Role } from "@prisma/client"
 
-export function useAuth() {
-  const { data: session, status } = useSession()
+export function useAuthData() {
+  const { user, isLoaded } = useUser()
+  const { isSignedIn } = useAuth()
 
   return {
-    user: session?.user,
-    isLoading: status === "loading",
-    isAuthenticated: !!session?.user,
+    user: user ? {
+      id: user.id,
+      email: user.emailAddresses[0]?.emailAddress,
+      name: user.fullName || user.firstName + " " + user.lastName,
+      role: user.publicMetadata?.role as Role || Role.CLIENT,
+    } : null,
+    isLoading: !isLoaded,
+    isAuthenticated: isSignedIn,
   }
 }
 
 export function useRole() {
-  const { user } = useAuth()
+  const { user } = useAuthData()
   
   return {
     role: user?.role,
